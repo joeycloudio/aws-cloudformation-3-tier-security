@@ -1,0 +1,639 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: |
+  This CloudFormation template deploys a secure, 3-tier AWS architecture 
+  in us-east-1 with an emphasis on security best practices. It includes:
+  - VPC, EC2 instances, ALB, and RDS for a web application.
+  - IAM roles, security groups, and logging configured for security and compliance.
+  - Designed with security, scalability, and fault tolerance in mind, though 
+    some features like Multi-AZ RDS or Auto Scaling are not included for 
+    demonstration purposes.
+  - Focused on providing a foundational AWS infrastructure for secure and resilient 
+    application deployment.
+
+Parameters:
+
+  Environment:
+      Type: String
+      Default: test
+      AllowedValues:
+        - dev
+        - test
+      Description: Select the Environment
+      ConstraintDescription: "Must be either dev or test."
+
+  ProjectOrApplicationName:
+      Type: String
+      Description: Project Name Or Application Name
+  
+  OwnerTeamName:
+      Type: String
+      Description: Owner Name or Team Name
+  
+  CostCenter:
+      Type: String
+      Description: Dept. Name
+  
+  DBPassword:
+    NoEcho: 'true'
+    Description: Password MySQL database access
+    Type: String
+    MinLength: '8'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z0-9]*'
+    ConstraintDescription: must contain only alphanumeric characters.
+
+  PrivateDBUser:
+    Type: String
+    Default: "admin"
+    Description: The IAM database user to use for authentication to RDS
+
+Resources:
+
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: True
+      EnableDnsSupport: True
+      Tags: 
+          - Key: "Environment"
+            Value: !Ref Environment
+          - Key: "ProjectOrApplicationName"
+            Value: !Ref ProjectOrApplicationName
+          - Key: Owner
+            Value: !Ref OwnerTeamName
+          - Key: "CostCenter"
+            Value: !Ref CostCenter
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-1a
+      CidrBlock: 10.0.0.0/24 #ensure IP addresses do not overlap
+      VpcId: !Ref VPC
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-1a
+      CidrBlock: 10.0.1.0/24 #ensure IP addresses do not overlap
+      VpcId: !Ref VPC
+
+  # Second public subnet in a different AZ for ALB requirements
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-1b
+      CidrBlock: 10.0.2.0/24  # Adjust the CIDR range accordingly
+      VpcId: !Ref VPC
+  
+  # Second private subnet in a different AZ for RDS requirements
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-1b
+      CidrBlock: 10.0.3.0/24 #ensure IP addresses do not overlap
+      VpcId: !Ref VPC
+
+  PublicSubnetsNACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: NACLforPublicSubnets
+
+  InboundRule1:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId:
+        Ref: PublicSubnetsNACL
+      RuleNumber: 100
+      Protocol: 6
+      RuleAction: allow
+      CidrBlock: 0.0.0.0/0  # ALB to Public EC2 HTTP
+      PortRange:
+        From: 80
+        To: 80
+  
+  InboundRule2:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId:
+        Ref: PublicSubnetsNACL
+      RuleNumber: 110
+      Protocol: 6 #TCP
+      RuleAction: allow
+      CidrBlock: 0.0.0.0/0  # ALB to Public EC2 HTTPS
+      PortRange:
+        From: 443
+        To: 443
+
+  InboundRule3:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId:
+        Ref: PublicSubnetsNACL
+      RuleNumber: 120
+      Protocol: 6 #TCP
+      RuleAction: allow
+      CidrBlock: !GetAtt PrivateSubnet1.CidrBlock  # Public EC2 to Private EC2 on port 8080
+      PortRange:
+        From: 8080
+        To: 8080
+
+  OutboundRule1:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId:
+        Ref: PublicSubnetsNACL
+      RuleNumber: 100
+      Protocol: 6  # TCP
+      Egress: true
+      RuleAction: ALLOW
+      PortRange:
+        From: 80
+        To: 80
+      CidrBlock: 0.0.0.0/0  # Public EC2 to ALB HTTP
+
+  OutboundRule2:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId:
+        Ref: PublicSubnetsNACL
+      RuleNumber: 110
+      Protocol: 6  # TCP
+      Egress: true
+      RuleAction: ALLOW
+      PortRange:
+        From: 443
+        To: 443
+      CidrBlock: 0.0.0.0/0  # Public EC2 to ALB HTTPS
+
+  OutboundRule3:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId:
+        Ref: PublicSubnetsNACL
+      RuleNumber: 120
+      Protocol: 6  # TCP
+      Egress: true
+      RuleAction: ALLOW
+      PortRange:
+        From: 8080
+        To: 8080
+      CidrBlock: !GetAtt PrivateSubnet1.CidrBlock  # Public EC2 to Private EC2 on port 8080
+
+  PrivateSubnetsNACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: NACLforPrivateSubnets
+
+  PrivateInboundRule1:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId:
+        Ref: PrivateSubnetsNACL
+      RuleNumber: 100
+      Protocol: 6  # TCP
+      RuleAction: allow
+      CidrBlock: !GetAtt PublicSubnet1.CidrBlock  # Public EC2 to Private EC2 on port 8080
+      PortRange:
+        From: 8080
+        To: 8080
+
+  PrivateOutboundRule1:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId:
+        Ref: PrivateSubnetsNACL
+      RuleNumber: 100
+      Protocol: 6  # TCP
+      Egress: true
+      RuleAction: ALLOW
+      PortRange:
+        From: 8080
+        To: 8080
+      CidrBlock: !GetAtt PublicSubnet1.CidrBlock  # Private EC2 to Public EC2 on port 8080
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  IGVPCAttachment: #this is also needed to attach the IG to the VPC
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+  
+  ALBForPublicSubnets:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      SecurityGroups: 
+        - !Ref ALBSG
+      Subnets: 
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      Type: application #default is application  
+
+  ALBSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: security group for the ALB
+      VpcId: !Ref VPC
+      #inbound rules - check the ec2 web server SG rules since that is what is going to be sent back to the ALB
+      SecurityGroupIngress:
+        - IpProtocol: tcp #80 is an http that runs on top of TCP
+          FromPort: 80 #SG checks if it will allow 80 http traffic
+          ToPort: 80 #fromport and toport are simply outlining a range of ports that can be used
+          CidrIp: 0.0.0.0/0 #allows traffic from VPC only, to be used with an ALB
+        - IpProtocol: tcp #443 is an https that runs on top of TCP
+          FromPort: 443 #SG checks if it will allow 443 https traffic
+          ToPort: 443 #fromport and toport are simply outlining a range of ports that can be used
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: "Environment"
+          Value: !Ref Environment
+        - Key: "ProjectOrApplicationName"
+          Value: !Ref ProjectOrApplicationName
+        - Key: Owner
+          Value: !Ref OwnerTeamName
+        - Key: "CostCenter"
+          Value: !Ref CostCenter
+  
+  # cloudwatch alarm for ALB HTTP 5xx Errors
+  ALBHigh5xxErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "Alarm when ALB HTTP 5xx error count exceeds 5"
+      MetricName: HTTPCode_ELB_5XX_Count
+      Namespace: AWS/ELB
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 5
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: !Ref ALBForPublicSubnets
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: IGVPCAttachment #must be made after first resource is made because it will be looking for this value
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0 #If the traffic is destined for anywhere on the internet, send it through this route
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref PublicRouteTable
+  
+  PublicSubnet1RTAssociation: #public subnet with public route created, NEED for all 3 that have a route to the internet
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
+
+  # presentation layer
+  RoleForPublicEC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref RoleForPublicEC2  # Attach the IAM Role to the Instance Profile
+
+  PublicEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0453ec754f44f9a4a
+      InstanceType: t2.micro
+      SecurityGroupIds: 
+        - !Ref PublicEC2SG
+      SubnetId: !Ref PublicSubnet1 # Automatically uses the AZ from the subnet
+      Monitoring: true # Detailed monitoring
+      IamInstanceProfile: !Ref RoleForPublicEC2InstanceProfile  # Attach the role for SSM access
+      Tags: 
+          - Key: "Environment"
+            Value: !Ref Environment
+          - Key: "ProjectOrApplicationName"
+            Value: !Ref ProjectOrApplicationName
+          - Key: Owner
+            Value: !Ref OwnerTeamName
+          - Key: "CostCenter"
+            Value: !Ref CostCenter
+      UserData: !Base64
+        Fn::Sub: |
+          #!/bin/bash
+          # Update system and install necessary software
+          sudo dnf update -y  # Amazon Linux 2023 uses dnf, not yum
+          sudo dnf install -y nginx awslogs amazon-cloudwatch-agent
+
+          # Start and enable Nginx
+          sudo systemctl start nginx
+          sudo systemctl enable nginx
+
+          # Create a simple HTML page to verify Nginx is running
+          echo "Hello, World! Nginx is running on Amazon Linux 2023!" | sudo tee /usr/share/nginx/html/index.html
+
+          # Restart Nginx to ensure the web page is served correctly
+          sudo systemctl restart nginx
+
+          # Install and configure CloudWatch Logs
+          # Start awslogs service
+          sudo systemctl start awslogsd
+          sudo systemctl enable awslogsd
+
+          # Start CloudWatch Agent
+          sudo amazon-cloudwatch-agent-ctl -a stop
+          sudo amazon-cloudwatch-agent-ctl -a start
+  
+  RoleForPublicEC2:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: ec2.amazonaws.com
+      Policies:
+        - PolicyName: EC2PublicAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # Restrict CloudWatch access to the ALB and EC2 metrics (to avoid broad access)
+              - Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                  - cloudwatch:GetMetricData
+                Resource:
+                  - !Sub arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:metric/EC2/CPUUtilization  # Restrict to specific EC2 metrics
+                  - !Sub arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:metric/ELB/HTTPCode_ELB_5XX_Count  # Restrict to ALB metrics
+
+              # Add SSM permissions
+              - Effect: Allow
+                Action:
+                  - ssm:SendCommand
+                  - ssm:StartSession
+                  - ssm:DescribeInstanceInformation
+                  - ssm:ListCommands
+                  - ssm:GetParameters
+                  - ssm:DescribeDocument
+                Resource: "*"
+
+              # EC2 messages permissions for communication with SSM
+              - Effect: Allow
+                Action:
+                  - ec2messages:SendMessage
+                  - ec2messages:Poll
+                  - ec2messages:DescribeInstances
+                Resource: "*"
+
+              # Permissions for accessing parameters from Systems Manager Parameter Store
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                Resource: "*"
+
+  # cloudwatch alarm for High CPU Utilization
+  PublicEC2HighCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "Alarm when EC2 CPU utilization exceeds 80%"
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 80
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref PublicEC2Instance
+
+  PublicEC2SG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: security group for the public-facing EC2 web server
+      VpcId: !Ref VPC
+      #inbound rules
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref ALBSG  # Allow only the ALB to send traffic
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          SourceSecurityGroupId: !Ref ALBSG  # Allow only the ALB to send traffic
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: !GetAtt PublicSubnet1.CidrBlock  # Allow public EC2 traffic to private EC2 via port 8080
+      Tags: 
+          - Key: "Environment"
+            Value: !Ref Environment
+          - Key: "ProjectOrApplicationName"
+            Value: !Ref ProjectOrApplicationName
+          - Key: Owner
+            Value: !Ref OwnerTeamName
+          - Key: "CostCenter"
+            Value: !Ref CostCenter
+
+  # application layer
+  RoleForPrivateEC2:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: ec2.amazonaws.com
+      Policies: 
+        - PolicyName: SystemsSecretsManagerRDSAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # Limit SSM permissions to only specific EC2 instances
+              - Effect: Allow
+                Action:
+                  - "ssm:SendCommand"
+                  - "ssm:StartSession"
+                  - "ssm:DescribeInstanceInformation"
+                  - "ssm:GetParameters"
+                  - "ec2messages:SendMessage"
+                  - "ec2messages:Poll"
+                  - "ec2messages:DescribeInstances"
+                  - "ssm:ListCommands"
+                Resource: "*"  # Allow for any EC2 instance
+
+              # SecretsManager permission restricted to the DB secret
+              - Effect: Allow
+                Action:
+                  - "secretsmanager:GetSecretValue"
+                Resource: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:MyDBCredentials*
+
+              # RDS DB connection permission
+              - Effect: Allow
+                Action:
+                  - "rds-db:connect"
+                Resource: !Sub arn:aws:rds-db:${AWS::Region}:${AWS::AccountId}:dbuser/${PrivateDBUser}
+
+  RoleForPrivateEC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref RoleForPrivateEC2  # Attach the IAM Role to the Instance Profile
+
+  PrivateEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0453ec754f44f9a4a
+      InstanceType: t2.micro
+      SecurityGroupIds: 
+        - !Ref PrivateEC2SG
+      SubnetId: !Ref PrivateSubnet1 # Automatically uses the AZ from the subnet
+      Monitoring: true
+      IamInstanceProfile: !Ref RoleForPrivateEC2InstanceProfile  # Attach the IAM role to EC2 instance
+      KeyName: !Ref "AWS::NoValue"  # No key pair for the private instance
+      Tags: 
+          - Key: "Environment"
+            Value: !Ref Environment
+          - Key: "ProjectOrApplicationName"
+            Value: !Ref ProjectOrApplicationName
+          - Key: Owner
+            Value: !Ref OwnerTeamName
+          - Key: "CostCenter"
+            Value: !Ref CostCenter   
+
+  PrivateEC2SG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: security group for the private EC2 server
+      VpcId: !Ref VPC
+      #inbound rules
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: !GetAtt PublicSubnet1.CidrBlock  # Allow traffic from Public EC2's subnet
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: !GetAtt PrivateSubnet1.CidrBlock  # Allow traffic to/from RDS instance (Private EC2 -> RDS)
+          # SSH was removed and Systems Manager was used instead, SSM
+      Tags: 
+        - Key: "Environment"
+          Value: !Ref Environment
+        - Key: "ProjectOrApplicationName"
+          Value: !Ref ProjectOrApplicationName
+        - Key: Owner
+          Value: !Ref OwnerTeamName
+        - Key: "CostCenter"
+          Value: !Ref CostCenter
+
+  # database layer
+  DatabaseSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: MyDBCredentials
+      SecretString: !Sub '{"username": "admin", "password": "${DBPassword}"}'  # Store both username and password
+  
+  PrivateRDSSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: "Private Subnet group for RDS"
+      SubnetIds:
+        - !Ref PrivateSubnet1 #only first subnet will be used for instance, second subnet there for failover
+        - !Ref PrivateSubnet2
+  
+  PrivateRDSInstance: #0.019 USD/HR "free tier"
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: privatedb-instance  # Unique identifier for the DB instance
+      Engine: mysql  # The database engine to use
+      DBInstanceClass: db.t4g.micro  # Instance type with 2 vCPUs and 1 GiB RAM
+      AllocatedStorage: 20  # 20 GiB of storage
+      MasterUsername: !Sub "{{resolve:secretsmanager:MyDBCredentials:SecretString:username}}"
+      MasterUserPassword: !Sub "{{resolve:secretsmanager:MyDBCredentials:SecretString:password}}"
+      BackupRetentionPeriod: 7  # Optional: Retain backups for 7 days
+      VPCSecurityGroups:
+        - !Ref PrivateRDSSG  # Replace with the ID of your security group
+      DBSubnetGroupName: !Ref PrivateRDSSubnetGroup  # Link the DB Subnet Group
+      PubliclyAccessible: false  # Don't make the DB instance publicly accessible
+      MultiAZ: false  # No Multi-AZ for cost-saving. In a production environment, consider enabling MultiAZ: true for your RDS instance to provide high availability and automatic failover.
+      DBName: mydatabase  # Optional: Name of the database to create
+      StorageType: gp2  # General Purpose SSD; consider gp3 or io1 for production/performance-based workloads
+      Tags: 
+          - Key: "Environment"
+            Value: !Ref Environment
+          - Key: "ProjectOrApplicationName"
+            Value: !Ref ProjectOrApplicationName
+          - Key: Owner
+            Value: !Ref OwnerTeamName
+          - Key: "CostCenter"
+            Value: !Ref CostCenter
+
+  PrivateRDSSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: security group for the private MySQL RDS DB
+      VpcId: !Ref VPC
+      #inbound rules
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: !GetAtt PrivateSubnet1.CidrBlock  # Allow only inbound Private EC2 traffic to the RDS instance
+      Tags: 
+          - Key: "Environment"
+            Value: !Ref Environment
+          - Key: "ProjectOrApplicationName"
+            Value: !Ref ProjectOrApplicationName
+          - Key: Owner
+            Value: !Ref OwnerTeamName
+          - Key: "CostCenter"
+            Value: !Ref CostCenter
+
+  # allows private EC2 instances to securely communicate with Systems Manager without requiring internet access. This is a security best practice to avoid exposing instances to the internet for SSM communications.
+  SSMVPCEndpoint: 
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazonaws.us-east-1.ssm
+      VpcId: !Ref VPC
+      VpcEndpointType: Interface
+
+Outputs:
+
+  VPCId:
+    Description: "VPC ID"
+    Value: !Ref VPC
+  
+  PublicEC2InstanceId:
+    Description: "Public EC2 Instance ID"
+    Value: !Ref PublicEC2Instance
+
+  ALBDNSName:
+    Description: "Application Load Balancer DNS Name"
+    Value: !GetAtt ALBForPublicSubnets.DNSName
+
+  RDSInstanceEndpoint:
+    Description: "RDS MySQL Instance Endpoint"
+    Value: !GetAtt PrivateRDSInstance.Endpoint.Address
+
+  DBSecretArn:
+    Description: "ARN of the RDS credentials secret"
+    Value: !Ref DatabaseSecret
+  
+  SSMVPCEndpoint:
+    Description: "SSM VPC Endpoint"
+    Value: !Ref SSMVPCEndpoint
