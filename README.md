@@ -2,6 +2,9 @@
 
 _A hands-on AWS CloudFormation project designed to build a secure, scalable, and resilient 3-tier cloud architecture._
 
+![AWS 3-Tier Architecture](AWS_3-Tier_Architecture_1.png)
+
+
 ---
 
 #### **📌 Project Overview**
