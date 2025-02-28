@@ -5,9 +5,9 @@ _A hands-on AWS CloudFormation project designed to build a secure, scalable, and
 ![AWS 3-Tier Architecture](AWS_3-Tier_Architecture_1.png)
 
 
----
+<br>
 
-#### **📌 Project Overview**
+## **📌 Project Overview**
 
 This CloudFormation template automates the deployment of a **secure 3-tier architecture** in AWS, with an emphasis on **security best practices** and **scalability**.
 
@@ -20,9 +20,9 @@ This CloudFormation template automates the deployment of a **secure 3-tier archi
 
 _Note: The project is designed for educational purposes. It is not yet production-ready (e.g., lacks ACM support for full HTTPS)._
 
----
+<br>
 
-#### **🔧 Architecture Components**
+## **🔧 Architecture Components**
 
 *   **Networking**: VPC, subnets, security groups, Network ACLs.
     
@@ -34,17 +34,17 @@ _Note: The project is designed for educational purposes. It is not yet productio
     
 *   **Security**: IAM roles, security groups, CloudWatch monitoring.
 
----
+<br>
 
-#### **📂 Repository Structure**
+## **📂 Repository Structure**
 
 *   README.md – This file
     
 *   [cloudformation-template.yaml](https://github.com/joeycloudio/aws-cloudformation-3-tier-security/blob/main/3-tier-security-demo.yml) – CloudFormation template for deploying resources
 
----    
+<br>    
 
-#### **🚀 Key Takeaways from This Project**
+## **🚀 Key Takeaways from This Project**
 
 *   Hands-on experience deploying a 3-tier architecture with AWS CloudFormation.
     
@@ -54,9 +54,9 @@ _Note: The project is designed for educational purposes. It is not yet productio
     
 *   Gained insights into using **CloudWatch** for system monitoring.
 
---- 
+<br> 
 
-#### **💡 Future Enhancements**
+## **💡 Future Enhancements**
 
 *   Implement **ACM for HTTPS support** to ensure secure connections.
     
@@ -64,9 +64,9 @@ _Note: The project is designed for educational purposes. It is not yet productio
     
 *   Enhance **monitoring and logging** with CloudTrail and AWS Config.
 
----
+<br>
 
-#### **📜 How to Deploy**
+## **📜 How to Deploy**
 
 1.  Clone the repository:
     ```bash
@@ -82,9 +82,9 @@ _Note: The project is designed for educational purposes. It is not yet productio
     
 5.  Launch the stack and review created resources.
 
----    
+<br>    
 
-#### **📫 Connect & Learn More**
+## **📫 Connect & Learn More**
 
 *   LinkedIn Article: [Full Project Breakdown](https://www.linkedin.com/pulse/deploying-securing-3-tier-architectures-aws-joey-acosta-aom3c/?trackingId=yon6XSOLRPWgLY%2FvZ3ChgQ%3D%3D)
     
