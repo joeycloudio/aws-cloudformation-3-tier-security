@@ -7,6 +7,15 @@ _A hands-on AWS CloudFormation project designed to build a secure, scalable, and
 
 <br>
 
+## Table of Contents
+- [Project Overview](#project_overview)
+- [Architecture Components](#architecture_components)
+- [Repository Structure](#repository_structure)
+- [Key Takeaways from This Project](#key_takeaways_from_this_project)
+- [Future Enhancements](#future_enhancements)
+- [How to Deploy](#how_to_deploy)
+- [Connect & Learn More](#connect_&_learn_more)
+
 ## **📌 Project Overview**
 
 This CloudFormation template automates the deployment of a **secure 3-tier architecture** in AWS, with an emphasis on **security best practices** and **scalability**.
