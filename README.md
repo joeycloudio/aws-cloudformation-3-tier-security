@@ -2,6 +2,8 @@
 
 _A hands-on AWS CloudFormation project designed to build a secure, scalable, and resilient 3-tier cloud architecture._
 
+---
+
 #### **📌 Project Overview**
 
 This CloudFormation template automates the deployment of a **secure 3-tier architecture** in AWS, with an emphasis on **security best practices** and **scalability**.
@@ -15,6 +17,8 @@ This CloudFormation template automates the deployment of a **secure 3-tier archi
 
 _Note: The project is designed for educational purposes. It is not yet production-ready (e.g., lacks ACM support for full HTTPS)._
 
+---
+
 #### **🔧 Architecture Components**
 
 *   **Networking**: VPC, subnets, security groups, Network ACLs.
@@ -26,14 +30,16 @@ _Note: The project is designed for educational purposes. It is not yet productio
 *   **Load Balancing**: Application Load Balancer (ALB) for distributing traffic.
     
 *   **Security**: IAM roles, security groups, CloudWatch monitoring.
-    
+
+---
 
 #### **📂 Repository Structure**
 
 *   README.md – This file
     
 *   cloudformation-template.yaml – CloudFormation template for deploying resources
-    
+
+---    
 
 #### **🚀 Key Takeaways from This Project**
 
@@ -44,7 +50,8 @@ _Note: The project is designed for educational purposes. It is not yet productio
 *   Learned how to debug **CloudFormation templates** and resolve issues.
     
 *   Gained insights into using **CloudWatch** for system monitoring.
-    
+
+--- 
 
 #### **💡 Future Enhancements**
 
@@ -53,7 +60,8 @@ _Note: The project is designed for educational purposes. It is not yet productio
 *   Add **Auto Scaling** to scale resources based on demand.
     
 *   Enhance **monitoring and logging** with CloudTrail and AWS Config.
-    
+
+---
 
 #### **📜 How to Deploy**
 
@@ -67,7 +75,8 @@ _Note: The project is designed for educational purposes. It is not yet productio
 5.  Upload cloudformation-template.yaml.
     
 6.  Launch the stack and review created resources.
-    
+
+---    
 
 #### **📫 Connect & Learn More**
 
