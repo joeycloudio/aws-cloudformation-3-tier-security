@@ -71,6 +71,6 @@ _Note: The project is designed for educational purposes. It is not yet productio
 
 #### **📫 Connect & Learn More**
 
-*   LinkedIn Article: Full Project Breakdown
+*   LinkedIn Article: [Full Project Breakdown](https://www.linkedin.com/pulse/deploying-securing-3-tier-architectures-aws-joey-acosta-aom3c/?trackingId=yon6XSOLRPWgLY%2FvZ3ChgQ%3D%3D)
     
-*   Portfolio & Other AWS Projects
+*   [Portfolio & Other AWS Projects](https://learn.nextwork.org/portfolio)
