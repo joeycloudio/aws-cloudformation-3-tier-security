@@ -8,7 +8,7 @@ _A hands-on AWS CloudFormation project designed to build a secure, scalable, and
 <br>
 
 ## Table of Contents
-- [📌 Project Overview](#project-overview)
+- [Project Overview](#project-overview)
 - [Architecture Components](#architecture-components)
 - [Repository Structure](#repository-structure)
 - [Key Takeaways from This Project](#key-takeaways-from-this-project)
@@ -18,7 +18,7 @@ _A hands-on AWS CloudFormation project designed to build a secure, scalable, and
 
 <br>
 
-## 📌 Project Overview
+## Project Overview
 
 This CloudFormation template automates the deployment of a **secure 3-tier architecture** in AWS, with an emphasis on **security best practices** and **scalability**.
 
@@ -33,7 +33,7 @@ _Note: The project is designed for educational purposes. It is not yet productio
 
 <br>
 
-## 🔧 Architecture Components
+## Architecture Components
 
 *   **Networking**: VPC, subnets, security groups, Network ACLs.
     
@@ -47,7 +47,7 @@ _Note: The project is designed for educational purposes. It is not yet productio
 
 <br>
 
-## **📂 Repository Structure**
+## Repository Structure
 
 *   README.md – This file
     
@@ -55,7 +55,7 @@ _Note: The project is designed for educational purposes. It is not yet productio
 
 <br>    
 
-## **🚀 Key Takeaways from This Project**
+## Key Takeaways from This Project
 
 *   Hands-on experience deploying a 3-tier architecture with AWS CloudFormation.
     
@@ -67,7 +67,7 @@ _Note: The project is designed for educational purposes. It is not yet productio
 
 <br> 
 
-## **💡 Future Enhancements**
+## Future Enhancements
 
 *   Implement **ACM for HTTPS support** to ensure secure connections.
     
@@ -77,7 +77,7 @@ _Note: The project is designed for educational purposes. It is not yet productio
 
 <br>
 
-## **📜 How to Deploy**
+## How to Deploy
 
 1.  Clone the repository:
     ```bash
@@ -95,7 +95,7 @@ _Note: The project is designed for educational purposes. It is not yet productio
 
 <br>    
 
-## **📫 Connect & Learn More**
+## Connect & Learn More
 
 *   LinkedIn Article: [Full Project Breakdown](https://www.linkedin.com/pulse/deploying-securing-3-tier-architectures-aws-joey-acosta-aom3c/?trackingId=yon6XSOLRPWgLY%2FvZ3ChgQ%3D%3D)
     
