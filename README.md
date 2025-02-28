@@ -16,7 +16,7 @@ _A hands-on AWS CloudFormation project designed to build a secure, scalable, and
 - [How to Deploy](#how-to-deploy)
 - [Connect & Learn More](#connect-&-learn-more)
 
-## **📌 Project Overview**
+## 📌 Project Overview
 
 This CloudFormation template automates the deployment of a **secure 3-tier architecture** in AWS, with an emphasis on **security best practices** and **scalability**.
 
@@ -31,7 +31,7 @@ _Note: The project is designed for educational purposes. It is not yet productio
 
 <br>
 
-## **🔧 Architecture Components**
+## 🔧 Architecture Components
 
 *   **Networking**: VPC, subnets, security groups, Network ACLs.
     
