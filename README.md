@@ -14,7 +14,7 @@ _A hands-on AWS CloudFormation project designed to build a secure, scalable, and
 - [Key Takeaways from This Project](#key-takeaways-from-this-project)
 - [Future Enhancements](#future-enhancements)
 - [How to Deploy](#how-to-deploy)
-- [Connect & Learn More](#connect-&-learn-more)
+- [Connect & Learn More](#connect-learn-more)
 
 <br>
 
