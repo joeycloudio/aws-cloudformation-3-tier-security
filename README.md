@@ -1,4 +1,4 @@
-### **🚀 Deploying & Securing a 3-Tier Architecture with AWS CloudFormation**
+# **🚀 Deploying & Securing a 3-Tier Architecture with AWS CloudFormation**
 
 _A hands-on AWS CloudFormation project designed to build a secure, scalable, and resilient 3-tier cloud architecture._
 
