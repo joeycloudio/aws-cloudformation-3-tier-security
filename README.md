@@ -37,7 +37,7 @@ _Note: The project is designed for educational purposes. It is not yet productio
 
 *   README.md – This file
     
-*   cloudformation-template.yaml – CloudFormation template for deploying resources
+*   [cloudformation-template.yaml](https://github.com/joeycloudio/aws-cloudformation-3-tier-security/blob/main/3-tier-security-demo.yml) – CloudFormation template for deploying resources
 
 ---    
 
