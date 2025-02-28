@@ -57,13 +57,16 @@ _Note: The project is designed for educational purposes. It is not yet productio
 
 #### **📜 How to Deploy**
 
-1.  bashCopygit clone https://github.com/yourusername/aws-cloudformation-3-tier-security.gitcd aws-cloudformation-3-tier-security
+1.  Clone the repository:
+
+2.  git clone https://github.com/yourusername/aws-cloudformation-3-tier-security.git
+    cd aws-cloudformation-3-tier-security
     
-2.  Go to the AWS CloudFormation console.
+3.  Go to the AWS CloudFormation console.
     
-3.  Upload cloudformation-template.yaml.
+4.  Upload cloudformation-template.yaml.
     
-4.  Launch the stack and review created resources.
+5.  Launch the stack and review created resources.
     
 
 #### **📫 Connect & Learn More**
