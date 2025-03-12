@@ -1,39 +1,30 @@
 # **🚀 Deploying & Securing a 3-Tier Architecture with AWS CloudFormation**
 
-_A hands-on AWS CloudFormation project designed to build a secure, scalable, and resilient 3-tier cloud architecture._
+_This CloudFormation template automates the deployment of a **secure 3-tier architecture** in AWS, with an emphasis on **security best practices** and **scalability**._
 
 ![AWS 3-Tier Architecture](AWS_3-Tier_Architecture_1.png)
 
+## ⚠️ Problem Statement  
+Deploying a secure, scalable web application manually is time-consuming and prone to security misconfigurations.
 
+## 📈 Business Impact  
+✅ Reduces infrastructure costs by provisioning only what’s needed.  
+✅ Increases security by enforcing best practices (e.g., private subnets, IAM roles).  
+✅ Simplifies scaling by using Load Balancers & Auto Scaling groups.
+
+## 🏢 How Companies Use This  
+Startups & enterprises automate cloud deployment to onboard applications quickly without manual work.
+
+_Note: The project is designed for educational purposes. It is not yet production-ready (e.g., lacks ACM support for full HTTPS)._
 <br>
 
 ## Table of Contents
-- [Project Overview](#project-overview)
 - [Architecture Components](#architecture-components)
 - [Repository Structure](#repository-structure)
 - [Key Takeaways from This Project](#key-takeaways-from-this-project)
 - [Future Enhancements](#future-enhancements)
 - [How to Deploy](#how-to-deploy)
 - [Connect and Learn More](#connect-and-learn-more)
-
-<br>
-
-## Project Overview
-
-This CloudFormation template automates the deployment of a **secure 3-tier architecture** in AWS, with an emphasis on **security best practices** and **scalability**.
-
-### ⚠️ Problem Statement
-Deploying a secure, scalable web application manually is time-consuming and prone to security misconfigurations.
-
-### 📈 Business Impact
-✅ Reduces infrastructure costs by provisioning only what’s needed.  
-✅ Increases security by enforcing best practices (e.g., private subnets, IAM roles).  
-✅ Simplifies scaling by using Load Balancers & Auto Scaling groups.
-
-### 🏢 How Companies Use This
-Startups & enterprises automate cloud deployment to onboard applications quickly without manual work.
-
-_Note: The project is designed for educational purposes. It is not yet production-ready (e.g., lacks ACM support for full HTTPS)._
 
 <br>
 
