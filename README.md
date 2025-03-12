@@ -22,17 +22,16 @@ _A hands-on AWS CloudFormation project designed to build a secure, scalable, and
 
 This CloudFormation template automates the deployment of a **secure 3-tier architecture** in AWS, with an emphasis on **security best practices** and **scalability**.
 
-Problem Statement
+### ⚠️ Problem Statement
 Deploying a secure, scalable web application manually is time-consuming and prone to security misconfigurations.
 
-Business Impact
-✅ Reduces infrastructure costs by provisioning only what’s needed.
-✅ Increases security by enforcing best practices (e.g., private subnets, IAM roles).
+### 📈 Business Impact
+✅ Reduces infrastructure costs by provisioning only what’s needed.  
+✅ Increases security by enforcing best practices (e.g., private subnets, IAM roles).  
 ✅ Simplifies scaling by using Load Balancers & Auto Scaling groups.
 
-How Companies Use This
+### 🏢 How Companies Use This
 Startups & enterprises automate cloud deployment to onboard applications quickly without manual work.
-    
 
 _Note: The project is designed for educational purposes. It is not yet production-ready (e.g., lacks ACM support for full HTTPS)._
 
